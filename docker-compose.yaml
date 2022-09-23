@@ -1,0 +1,44 @@
+version: '3'
+services:
+
+  web:
+    container_name: web
+    image: zedonora/frev-web
+    expose:
+      - 8080
+    volumes:
+      - ./secret:/secret
+    ports:
+      - 8080:8080
+
+  react:
+    container_name: front
+    image: zedonora/frev-front
+    expose:
+      - 3000
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./conf/:/etc/nginx/conf.d
+      - /data/certbot/conf:/etc/letsencrypt
+      - /data/certbot/www:/var/www/certbot
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - web
+      - react
+  
+  redis:
+      image: redis:alpine
+      command: redis-server --port 6379
+      container_name: redis_boot
+      hostname: redis_boot
+      labels:
+        - "name=redis"
+        - "mode=standalone"
+      ports:
+        - 6379:6379
